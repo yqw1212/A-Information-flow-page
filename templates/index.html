@@ -1,0 +1,174 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"
+      integrity="sha384-XdYbMnZ/QjLh6iI4ogqCTaIjrFk87ip+ekIjefZch0Y+PvJ8CDYtEs1ipDmPorQ+" crossorigin="anonymous">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>留言板</title>
+    <style>
+        body{background-color: #FAF4FF}
+        h1{
+
+        }
+    </style>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
+    <!--<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}" type="text/css">-->
+    <script type="text/javascript" src="{{ url_for('static', filename='popper.min.js') }}"></script>
+    <script language="javascript">
+        function ScroWin()
+        {
+            window.scrollBy( 0, 1 );
+        }
+
+        function downdown()
+        {
+            var tm = setInterval( ll, 10 );
+            function ll(){
+                window.scrollBy(0, 1);
+                if (document.body.scrollTop == document.body.scrollHeight) {
+                    clearTimeout(tm);
+                }
+                window.onscroll = function(){
+                                        if(getScrollTop() + getWindowHeight() == getScrollHeight()){
+                                                 alert("you are in the bottom!");
+                                        }
+                                };
+            }
+        }
+        function getScrollTop()
+        {
+            var scrollTop = 0, bodyScrollTop = 0, documentScrollTop = 0;
+            if(document.body){
+                bodyScrollTop = document.body.scrollTop;
+            }
+            if(document.documentElement){
+                documentScrollTop = document.documentElement.scrollTop;
+            }
+            scrollTop = (bodyScrollTop - documentScrollTop > 0) ? bodyScrollTop : documentScrollTop;
+            return scrollTop;
+        }
+        //文档的总高度
+        function getScrollHeight()
+        {
+            var scrollHeight = 0, bodyScrollHeight = 0, documentScrollHeight = 0;
+            if(document.body){
+                bodyScrollHeight = document.body.scrollHeight;
+            }
+            if(document.documentElement){
+                documentScrollHeight = document.documentElement.scrollHeight;
+            }
+            scrollHeight = (bodyScrollHeight - documentScrollHeight > 0) ? bodyScrollHeight : documentScrollHeight;
+            return scrollHeight;
+        }
+        //浏览器视口的高度
+        function getWindowHeight()
+        {
+            var windowHeight = 0;
+            if(document.compatMode == "CSS1Compat"){
+                windowHeight = document.documentElement.clientHeight;
+            }
+            else{
+                windowHeight = document.body.clientHeight;
+            }
+            return windowHeight;
+        }
+    </script>
+    <script language="javascript">
+        function ScroWin2()
+        {
+            window.scrollBy( 0, -1 );
+        }
+    </script>
+    <script language="JavaScript">
+        function setting()
+        {
+            var BGCLR = prompt( "请输入背景颜色:", "#333333" );
+            var WIDTH = prompt( "请输入窗口宽度:", "800" );
+            var HEIGHT = prompt( "请输入窗口高度:", "600" );
+            document.bgColor=BGCLR;// 设置背景色
+            window.resizeTo(parseInt(WIDTH), parseInt(HEIGHT));// 设置窗口尺寸
+        }
+    </script>
+    <script>													//javascrip开始
+	    var str="     欢迎光临留言板!"							//给字符串赋初值
+	    function titleMove()
+	    {
+	   	    str=str.substring(1,str.length)+str.substring(0,1);	//设置当前标题栏和状态栏中要显示的字符
+		    document.title=str;									//重新设置文档的标题
+		    status=str;											//设置状态栏的信息
+	    }
+	    if(str.length>20)
+	        str="     欢迎光临留言板!";		//如果字符数大于指定的长度时，让它变成初始状态
+        setInterval("titleMove()",100);							// 调节滚动速度
+    </script>
+
+</head>
+<body>
+<h1 class="text-center">留言板</h1><br><br>
+<div class="container-fluid">
+    <form method="post" action="{{request.full_path}}">
+    {{ form.csrf_token }}
+        <center><i class="fa fa-transgender" aria-hidden="true">{{ form.name.label }}</i>&nbsp;
+            {{ form.name(style="background-color:transparent",placeholder="给自己起个好听的名字^-^!~")}}</center><br>
+        <center><i class="fa fa-comments-o" aria-hidden="true">{{ form.body.label }}</i></center>
+        <center>{{ form.body (style="width:600px;height:150px;background-color:transparent",placeholder="在这里留言^-^!~")}}</center><br>
+
+        <!--<center>{{ form.submit(class="btn btn-primary")}}</center>-->
+        <center><button name="submit" class="btn btn-primary"><i class="fa fa-paper-plane">submit</i></button>
+            <!--<button name="settings" class="btn btn-primary" onclick="setting()">settings</button>--></center>
+    </form>
+
+    <h5>
+        {{ messages|length }} messages
+        <small class="float-right">
+            直达底部
+            <a href="#bottom" title="Go Bottom">&darr;</a><br>
+            <input type="button" value="自动下滚" onclick="setInterval('ScroWin()', 10 )">
+        </small>
+    </h5>
+    <div class="list-group">
+        {% for message in messages %}
+            <a class="list-group-item list-group-item-action">
+                <div>
+                    <h5 class="text-success">{{ message.name }}
+                        <small class="text-muted"> #{{ loop.revindex }}</small>
+                    </h5>
+                    {{ message.timestamp2.strftime('%Y-%m-%d %H:%M:%S') }}
+                    <small data-toggle="tooltip" data-placement="top"
+                     data-timestamp="{{ message.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+                     data-delay="500">
+                     {{ moment(message.timestamp).fromNow(refresh=True) }}
+                    </small>
+                </div>
+                <p >{{ message.body }}</p>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+<p class="text-center">-------------------------------------------------------------------------------------------------
+    我可是有底线的！-------------------------------------------------------------------------------------------------</p>
+
+<h5>
+<small>
+    <input type="button" value="自动上滚" onclick="setInterval('ScroWin2()', 10 )"><br>
+</small></h5>
+<small>
+    <p>直达上部<a id="bottom" href="#" title="Go Top">&uarr;&uarr;&uarr;</a></p>
+</small>
+
+<script type="text/javascript" src="{{ url_for('static', filename='jquery-3.2.1.slim.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='popper.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+{{ moment.include_moment(local_js=url_for('static', filename='moment-with-locales.min.js')) }}
+
+<script language="javascript">
+    window.defaultStatus="留言板^.^~~留言板"	// 状态栏上的广告信息
+</script>
+</body>
+</html>
